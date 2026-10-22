@@ -10,7 +10,13 @@ public record Money(long minorUnits, Currency currency) {
     }
 
     public static Money of(long minorUnits, String currencyCode) {
-        return new Money(minorUnits, Currency.getInstance(currencyCode));
+        Currency currency;
+        try {
+            currency = Currency.getInstance(currencyCode);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("unknown currency: " + currencyCode);
+        }
+        return new Money(minorUnits, currency);
     }
 
     public Money plus(Money other) {

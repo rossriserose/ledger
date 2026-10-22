@@ -47,7 +47,7 @@ final class IdempotencyRegistry {
             store.put(key, new Settled(result, claim.fingerprint()));
             claim.result().complete(result);
             return result;
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | Error e) {
             store.remove(key);
             claim.result().completeExceptionally(e);
             throw e;

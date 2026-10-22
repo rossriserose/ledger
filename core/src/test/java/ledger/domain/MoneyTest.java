@@ -25,6 +25,13 @@ class MoneyTest {
     }
 
     @Test
+    void unknownCurrencyHasAClearMessage() {
+        assertThatThrownBy(() -> Money.of(100, "XYZ"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("unknown currency: XYZ");
+    }
+
+    @Test
     void differentCurrenciesCanNotBeMixed() {
         assertThatThrownBy(() -> Money.of(100, "EUR").plus(Money.of(100, "USD")))
                 .isInstanceOf(IllegalArgumentException.class);

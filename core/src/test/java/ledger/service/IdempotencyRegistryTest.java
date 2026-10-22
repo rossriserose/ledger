@@ -56,6 +56,15 @@ class IdempotencyRegistryTest {
     }
 
     @Test
+    void errorAlsoFreesTheKey() {
+        assertThatThrownBy(() -> registry.execute("k", "f", () -> {
+            throw new StackOverflowError();
+        })).isInstanceOf(StackOverflowError.class);
+
+        assertThat(registry.execute("k", "f", () -> RESULT)).isEqualTo(new TransferOutcome(RESULT, false));
+    }
+
+    @Test
     void retryGivesUpWhenOriginalTakesTooLong() {
         store.putIfAbsent("k", new InFlight(new CompletableFuture<>(), "f"));
 

@@ -16,6 +16,7 @@ public record TransferCommand(String idempotencyKey, AccountId from, AccountId t
     }
 
     String fingerprint() {
-        return from + "->" + to + ":" + amount;
+        // Length prefix, so ids that contain "->" or ":" can not give the same text.
+        return from.value().length() + ":" + from + "->" + to.value().length() + ":" + to + ":" + amount;
     }
 }

@@ -25,4 +25,12 @@ class TransferCommandTest {
         assertThat(new TransferCommand("k1", A, B, 11).fingerprint()).isNotEqualTo(fingerprint);
         assertThat(new TransferCommand("k1", B, A, 10).fingerprint()).isNotEqualTo(fingerprint);
     }
+
+    @Test
+    void separatorsInsideIdsDoNotMakeTheSameFingerprint() {
+        var first = new TransferCommand("k", AccountId.of("a"), AccountId.of("b->c:1"), 5);
+        var second = new TransferCommand("k", AccountId.of("a->b"), AccountId.of("c:1"), 5);
+
+        assertThat(first.fingerprint()).isNotEqualTo(second.fingerprint());
+    }
 }
