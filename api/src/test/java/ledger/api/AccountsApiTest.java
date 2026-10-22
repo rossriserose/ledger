@@ -44,7 +44,11 @@ class AccountsApiTest extends ApiTestSupport {
         var floatAmount = post("/accounts", null, "{\"id\":\"x\",\"initialBalance\":10.5,\"currency\":\"EUR\"}");
         var unknownField = post("/accounts", null, "{\"id\":\"x\",\"balance\":1,\"currency\":\"EUR\"}");
         var broken = post("/accounts", null, "{not json");
+        var tooLarge = post("/accounts", null, "{\"id\":\"x\",\"initialBalance\":99999999999999999999,\"currency\":\"EUR\"}");
 
+        assertThat(tooLarge.statusCode()).isEqualTo(400);
+        assertThat(tooLarge.body()).isEqualTo(
+                "{\"error\":\"BAD_REQUEST\",\"message\":\"initialBalance is out of range\"}");
         assertThat(floatAmount.body()).isEqualTo(
                 "{\"error\":\"BAD_REQUEST\",\"message\":\"initialBalance must be an integer in minor units\"}");
         assertThat(unknownField.body()).isEqualTo(

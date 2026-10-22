@@ -1,6 +1,8 @@
 package ledger.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.exc.InputCoercionException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.cfg.CoercionAction;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
@@ -127,6 +129,10 @@ public final class LedgerApi {
             throw ApiException.badRequest("unknown field " + e.getPropertyName());
         } catch (MismatchedInputException e) {
             throw ApiException.badRequest(wrongTypeMessage(e));
+        } catch (JsonMappingException e) {
+            throw ApiException.badRequest(e.getCause() instanceof InputCoercionException
+                    ? outOfRangeMessage(e)
+                    : "malformed json");
         } catch (JsonProcessingException e) {
             throw ApiException.badRequest("malformed json");
         }
@@ -140,6 +146,13 @@ public final class LedgerApi {
         return e.getTargetType() == Long.class
                 ? field + " must be an integer in minor units"
                 : field + " has the wrong type";
+    }
+
+    private static String outOfRangeMessage(JsonMappingException e) {
+        if (e.getPath().isEmpty()) {
+            return "number is out of range";
+        }
+        return e.getPath().get(e.getPath().size() - 1).getFieldName() + " is out of range";
     }
 
     private static void error(Context ctx, int status, String error, String message) {
