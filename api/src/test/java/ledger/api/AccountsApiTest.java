@@ -56,4 +56,25 @@ class AccountsApiTest extends ApiTestSupport {
         assertThat(broken.body()).isEqualTo(
                 "{\"error\":\"BAD_REQUEST\",\"message\":\"malformed json\"}");
     }
+
+    @Test
+    void trailingTokensAndDuplicateFieldsAreRejected() throws Exception {
+        var trailing = post("/accounts", null, "{\"id\":\"x\",\"initialBalance\":1,\"currency\":\"EUR\"} xyz");
+        var duplicate = post("/accounts", null, "{\"id\":\"x\",\"id\":\"y\",\"initialBalance\":1,\"currency\":\"EUR\"}");
+
+        assertThat(trailing.statusCode()).isEqualTo(400);
+        assertThat(duplicate.statusCode()).isEqualTo(400);
+        assertThat(get("/accounts/x").statusCode()).isEqualTo(404);
+        assertThat(get("/accounts/y").statusCode()).isEqualTo(404);
+    }
+
+    @Test
+    void unknownRouteGivesJsonError() throws Exception {
+        var response = get("/nope");
+
+        assertThat(response.statusCode()).isEqualTo(404);
+        assertThat(response.headers().firstValue("Content-Type")).hasValueSatisfying(
+                type -> assertThat(type).startsWith("application/json"));
+        assertThat(response.body()).startsWith("{\"error\":\"NOT_FOUND\"");
+    }
 }

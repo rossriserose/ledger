@@ -81,5 +81,7 @@ request runs the transfer. Retries wait for its result. The key is claimed befor
 - **`long` cents, not `BigDecimal`.** Exact and simple. Overflow is checked with `Math.addExact`, so a credit
   that would overflow is rejected with 422 and does not wrap to a negative number.
 - **Single node only.** Several instances would need a shared database, not more locks.
+- **Reads are not a snapshot.** A GET takes no lock. It sees only committed data, but a balance and the
+  entries list can be from slightly different moments.
 
 The concurrency tests (contention, double spend, in-flight retries, deadlock, parallelism) run 20 times each.

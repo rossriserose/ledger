@@ -1,9 +1,12 @@
 package ledger.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.core.exc.InputCoercionException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.cfg.CoercionAction;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
@@ -11,6 +14,8 @@ import com.fasterxml.jackson.databind.cfg.CoercionInputShape;
 import com.fasterxml.jackson.databind.type.LogicalType;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.http.HttpResponseException;
+import io.javalin.http.HttpStatus;
 import io.javalin.json.JavalinJackson;
 import ledger.api.Dto.AccountResponse;
 import ledger.api.Dto.CreateAccountRequest;
@@ -56,6 +61,8 @@ public final class LedgerApi {
                 .get("/accounts/{id}/entries", api::getEntries)
                 .post("/transfers", api::transfer)
                 .exception(ApiException.class, (e, ctx) -> error(ctx, e.status(), e.error(), e.getMessage()))
+                .exception(HttpResponseException.class, (e, ctx) ->
+                        error(ctx, e.getStatus(), HttpStatus.forStatus(e.getStatus()).name(), e.getMessage()))
                 .exception(IllegalArgumentException.class, (e, ctx) -> error(ctx, 400, "BAD_REQUEST", e.getMessage()))
                 .exception(DuplicateAccountException.class, (e, ctx) -> error(ctx, 409, "DUPLICATE_ACCOUNT", e.getMessage()))
                 .exception(IdempotencyConflictException.class, (e, ctx) -> error(ctx, 409, "IDEMPOTENCY_KEY_REUSED", e.getMessage()))
@@ -160,7 +167,10 @@ public final class LedgerApi {
     }
 
     private static ObjectMapper strictMapper() {
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = JsonMapper.builder()
+                .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
+                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS)
+                .build();
         mapper.coercionConfigFor(LogicalType.Integer)
                 .setCoercion(CoercionInputShape.Float, CoercionAction.Fail)
                 .setCoercion(CoercionInputShape.String, CoercionAction.Fail)
