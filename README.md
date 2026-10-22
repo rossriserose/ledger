@@ -15,6 +15,7 @@ You only need a JDK 17 or newer.
 ## API
 
 Amounts are integers in minor units (cents): `10000` with `EUR` is 100.00 EUR. Floats like `10.5` are rejected.
+Every account has one currency. A transfer between different currencies is rejected with 422, there is no FX.
 
 | Method | Path | Success | Errors |
 |---|---|---|---|
@@ -47,6 +48,7 @@ curl localhost:8080/accounts/alice/entries   # one entry of -2500
 
 - A transfer is atomic: both balances and both entries change, or nothing changes.
 - A balance never goes below zero.
+- Double entry: every transfer writes two entries, `-amount` and `+amount`. All entries always sum to zero.
 - One idempotency key is applied at most once, also when retries come while the first request is running.
 - Transfers on different accounts run in parallel. There is no global lock.
 - Deadlock is not possible, because locks are always taken in the same order.
@@ -76,7 +78,8 @@ request runs the transfer. Retries wait for its result. The key is claimed befor
   the client can retry.
 - **Waiting retries time out** after 10 seconds with 503 and `Retry-After`.
 - **Idempotency records are never removed.** A real system would delete them after about 24 hours.
-- **`long` cents, not `BigDecimal`.** Exact and simple, and overflow is checked.
+- **`long` cents, not `BigDecimal`.** Exact and simple. Overflow is checked with `Math.addExact`, so a credit
+  that would overflow is rejected with 422 and does not wrap to a negative number.
 - **Single node only.** Several instances would need a shared database, not more locks.
 
 The concurrency tests (contention, double spend, in-flight retries, deadlock, parallelism) run 20 times each.
