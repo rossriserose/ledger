@@ -12,10 +12,6 @@ final class Invariants {
     private Invariants() {
     }
 
-    /**
-     * Money is conserved, nothing is negative, all entries sum to zero and every
-     * balance equals its opening balance plus its own entries.
-     */
     static void check(LedgerService service, Map<AccountId, Long> openingBalances) {
         long expectedTotal = openingBalances.values().stream().mapToLong(Long::longValue).sum();
         long total = 0;

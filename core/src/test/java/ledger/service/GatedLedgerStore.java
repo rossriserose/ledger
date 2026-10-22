@@ -13,10 +13,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Test double. A transaction that touches the gated account stops inside the real
- * transaction (locks are held) until the test thread calls release().
- */
+// Stops a transaction on the gated account inside the lock, until release() is called.
 final class GatedLedgerStore implements LedgerStore {
 
     private final LedgerStore delegate;

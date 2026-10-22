@@ -15,9 +15,6 @@ import java.net.http.HttpResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Starts the real server on a free port for each test.
- */
 abstract class ApiTestSupport {
 
     private final HttpClient client = HttpClient.newHttpClient();

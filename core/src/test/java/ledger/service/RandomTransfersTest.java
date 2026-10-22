@@ -18,10 +18,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Random commands, including bad ones: self transfers, unknown accounts,
- * zero or negative amounts and reused keys. Each repetition uses its own seed.
- */
 class RandomTransfersTest {
 
     private static final int THREADS = 8;

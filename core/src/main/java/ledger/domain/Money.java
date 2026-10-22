@@ -3,10 +3,6 @@ package ledger.domain;
 import java.util.Currency;
 import java.util.Objects;
 
-/**
- * Amount in minor units (cents for EUR). We use long and not double, because
- * double can not keep 0.10 exactly. Arithmetic throws ArithmeticException on overflow.
- */
 public record Money(long minorUnits, Currency currency) {
 
     public Money {

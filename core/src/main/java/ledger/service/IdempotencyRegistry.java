@@ -14,11 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-/**
- * Claim before execute. The first request puts an InFlight record and becomes the owner.
- * Every other request with the same key reads the settled result, or waits for the owner.
- * Business rejections are settled results too. Only unexpected failures free the key again.
- */
 final class IdempotencyRegistry {
 
     private final IdempotencyStore store;

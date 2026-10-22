@@ -19,11 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Keeps everything in maps. Atomicity comes from per-account locks, always taken
- * in sorted id order, so two transactions over the same accounts can not deadlock.
- * Writes of a transaction are staged and applied only when the work returns normally.
- */
 public class InMemoryLedgerStore implements LedgerStore {
 
     private final ConcurrentHashMap<AccountId, Account> accounts = new ConcurrentHashMap<>();
@@ -32,8 +27,7 @@ public class InMemoryLedgerStore implements LedgerStore {
 
     @Override
     public <T> T inTransaction(Set<AccountId> ids, TransactionalWork<T> work) {
-        // Accounts are never deleted, so an id unknown at this point stays unknown
-        // for the whole transaction and does not need a lock.
+        // Accounts are never deleted, so an unknown id stays unknown and needs no lock.
         List<AccountId> ordered = ids.stream().filter(accounts::containsKey).sorted().toList();
         List<ReentrantLock> held = new ArrayList<>(ordered.size());
         try {

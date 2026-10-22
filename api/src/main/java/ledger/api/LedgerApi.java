@@ -146,9 +146,6 @@ public final class LedgerApi {
         ctx.status(status).json(new ErrorResponse(error, message));
     }
 
-    /**
-     * Amounts are integers in minor units. 10.5, "10" or true are not accepted.
-     */
     private static ObjectMapper strictMapper() {
         ObjectMapper mapper = new ObjectMapper();
         mapper.coercionConfigFor(LogicalType.Integer)
